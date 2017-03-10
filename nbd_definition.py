@@ -12,4 +12,4 @@ class Games(ndb.Model):
     game_id = ndb.IntegerProperty()
     game_name = ndb.StringProperty()
     recent_played = ndb.BoolProperty()
-        
+    play_time = ndb.IntegerProperty()        
