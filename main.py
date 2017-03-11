@@ -14,7 +14,7 @@ def get_steam_info (steam_id):
     url = player_summary + steam_key + url_para
     resp_r = urlfetch.fetch(url)
     data = resp_r['response']
-    data = data['players']
+    data = data['players'][0]
 	player = []
 	for player in players:
         	    
