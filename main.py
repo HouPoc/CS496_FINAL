@@ -5,6 +5,22 @@ import json
 import webapp2
 import urllib
 
+
+
+def get_steam_info (steam_id):
+    player_summary = 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key='
+    steam_key = 'E605A7E4E5549D4B289D5CA74D952E93'
+    url_para = '&steamids=' + str(steam_id)
+    url = player_summary + steam_key + url_para
+    resp_r = urlfetch.fetch(url)
+    data = resp_r['response']
+    data = data['players']
+	player = []
+	for player in players:
+        	    
+	
+    
+	
 def decode_token(access_token):
      header = {'Authorization': 'Bearer {}'.format(access_token)}
      resp_r = urlfetch.fetch(
@@ -46,9 +62,7 @@ class UserHandler(webapp2.RequestHandler):
         user_Info = json.loads(self.request.body)
         user_data = decode_token(user_Info['access_token'])
         user_id = user_data['id']
-        steam = user_Info['steam_id']
-        active = False
-        game = ['/1', '/2']
+        steam_info = steam_info(user_Info['steam_id'])
         new_user = Users (
             google_id = user_id,
             steam_id = steam,
