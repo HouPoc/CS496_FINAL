@@ -2,7 +2,6 @@ from google.appengine.ext import ndb
 
 
 class Users(ndb.Model):
-    google_name = ndb.StringProperty()
     google_id = ndb.StringProperty()
     steam_id = ndb.IntegerProperty()
     active_state = ndb.BoolProperty() 
