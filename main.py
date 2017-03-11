@@ -4,7 +4,7 @@ from ndb_definition import *
 import json
 import webapp2
 import urllib
-
+import time
 
 
 def get_steam_info (steam_id):
@@ -12,15 +12,19 @@ def get_steam_info (steam_id):
     steam_key = 'E605A7E4E5549D4B289D5CA74D952E93'
     url_para = '&steamids=' + str(steam_id)
     url = player_summary + steam_key + url_para
-    resp_r = urlfetch.fetch(url)
-    data = resp_r['response']
-    data = data['players'][0]
-    player = []
-	for player in players:
-        	    
-	
-    
-	
+    resp_r = json.loads(urlfetch.fetch(url).content)
+    data = resp_r['response']['players']
+    data = data[0]
+    player = {}
+    current_time = int(time.time())
+    if (current_time - data['lastlogoff'] < 604800):
+        player['active'] = True
+    else:
+        player['active'] = False
+    player['owned_game'] = ['12321','233122']
+    return player
+         
+
 def decode_token(access_token):
      header = {'Authorization': 'Bearer {}'.format(access_token)}
      resp_r = urlfetch.fetch(
@@ -62,12 +66,12 @@ class UserHandler(webapp2.RequestHandler):
         user_Info = json.loads(self.request.body)
         user_data = decode_token(user_Info['access_token'])
         user_id = user_data['id']
-        steam_info = steam_info(user_Info['steam_id'])
+        steam_info = get_steam_info(user_Info['steam_id'])
         new_user = Users (
             google_id = user_id,
-            steam_id = steam,
-            active_state = active,
-            owned_game = game			
+            steam_id = user_Info['steam_id'],
+            active_state = steam_info['active'],
+            owned_game = steam_info['owned_game']			
         )
         new_user.put()
         self.response.write(json.dumps(new_user.to_dict()))
