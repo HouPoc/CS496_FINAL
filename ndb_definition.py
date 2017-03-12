@@ -9,6 +9,7 @@ class Users(ndb.Model):
 
 
 class Games(ndb.Model):
+    user_id = ndb.IntegerProperty(required=True)
     game_id = ndb.IntegerProperty()
     game_name = ndb.StringProperty()
     recent_played = ndb.BooleanProperty()

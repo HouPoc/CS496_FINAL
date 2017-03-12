@@ -21,7 +21,24 @@ def get_steam_info (steam_id):
         player['active'] = True
     else:
         player['active'] = False
-    player['owned_game'] = ['12321','233122']
+    owned_games = 'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key='
+    appinfo = '&include_appinfo=true'
+    format = '&format=json'
+    url = owned_games + steam_key + url_para + appinfo + format
+    resp_r = json.loads(urlfetch.fetch(url).content)
+    data = resp_r['response']
+    player['game_count'] = data['game_count']
+    play['game'] = []
+    for item in data['games']:
+        game_info = []
+        game_info.append(item['appid'])
+        game_info.append(item['name'])
+        if item['playtime_2weeks'] is not None:
+            game_info.append(0)
+        else:
+            game_info.append(item['playtime_2weeks'])
+        game_info.append(item['playtime_forever'])
+        player['game'].append(game_info)
     return player
          
 
@@ -34,6 +51,18 @@ def decode_token(access_token):
      data = resp_r.content
      data = json.loads(data)
      return data
+	 
+def add_new_game(game_data, user):
+    new_game = Games (
+	    user_id = user
+        game_id = game_data[0]
+        game_name = game_data[1]
+        recent_played = game_data[2]
+        play_time = game_data[3]		
+    )
+    new_game.put()
+    game_index = new_game.key.id()
+    return ('/Game/'+str(game_index)) 	
 
 class StartPage(webapp2.RequestHandler):
     def get(self):
@@ -67,11 +96,14 @@ class UserHandler(webapp2.RequestHandler):
         user_data = decode_token(user_Info['access_token'])
         user_id = user_data['id']
         steam_info = get_steam_info(user_Info['steam_id'])
+        game_owned = []
+        for item in steam_info['owned_game']:
+            game_owned.addend(add_new_game(item, user_id))    
         new_user = Users (
             google_id = user_id,
             steam_id = user_Info['steam_id'],
             active_state = steam_info['active'],
-            owned_game = steam_info['owned_game']			
+            owned_game = game_owned			
         )
         new_user.put()
         self.response.write(json.dumps(new_user.to_dict()))
