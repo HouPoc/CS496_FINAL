@@ -119,5 +119,11 @@ new_allowed_methods = allowed_methods.union(('PATCH',))
 webapp2.WSGIApplication.allowed_methods = new_allowed_methods
 app = webapp2.WSGIApplication([
     ('/', StartPage),
-    ('/newUser',UserHandler)
-], debug=True)		
+    ('/User',UserHandler),
+	('/Users', UserHandler)
+], debug=True)
+app.router.add(webapp2.Route('/User/<access_token:.*>', handler=UserHandler))	
+
+
+
+	
