@@ -75,8 +75,9 @@ class StartPage(webapp2.RequestHandler):
 		
 class UserHandler(webapp2.RequestHandler):
     def get(self):
-        if 'access_token' in args:
-            user_data = decode_token(args['access_token'])
+        access_token = self.request.get('access_token') 
+        if access_token:
+            user_data = decode_token(access_token)
             user_id = user_data['id']
             query_user = Users.query(Books.google_id == user_id)
             user_data = query_user.fetch()
@@ -121,8 +122,7 @@ app = webapp2.WSGIApplication([
     ('/', StartPage),
     ('/User',UserHandler),
 	('/Users', UserHandler)
-], debug=True)
-app.router.add(webapp2.Route('/User/<access_token:.*>', handler=UserHandler))	
+], debug=True)	
 
 
 
