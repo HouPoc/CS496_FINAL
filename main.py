@@ -22,21 +22,21 @@ def get_steam_info (steam_id):
     else:
         player['active'] = False
     owned_games = 'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key='
-    appinfo = '&include_appinfo=true'
+    appinfo = '&include_appinfo=1'
     format = '&format=json'
-    url = owned_games + steam_key + url_para + appinfo + format
+    url = owned_games + steam_key + '&steamid=' + str(steam_id) + appinfo + format
     resp_r = json.loads(urlfetch.fetch(url).content)
     data = resp_r['response']
     player['game_count'] = data['game_count']
-    play['game'] = []
+    player['game'] = []
     for item in data['games']:
         game_info = []
         game_info.append(item['appid'])
         game_info.append(item['name'])
-        if item['playtime_2weeks'] is not None:
-            game_info.append(0)
-        else:
+        if 'playtime_2weeks' in item.keys():
             game_info.append(item['playtime_2weeks'])
+        else:
+            game_info.append(0)
         game_info.append(item['playtime_forever'])
         player['game'].append(game_info)
     return player
@@ -54,10 +54,10 @@ def decode_token(access_token):
 	 
 def add_new_game(game_data, user):
     new_game = Games (
-	    user_id = user
-        game_id = game_data[0]
-        game_name = game_data[1]
-        recent_played = game_data[2]
+        user_id = user,
+        game_id = game_data[0],
+        game_name = game_data[1],
+        recent_played = bool(game_data[2]),
         play_time = game_data[3]		
     )
     new_game.put()
@@ -97,8 +97,8 @@ class UserHandler(webapp2.RequestHandler):
         user_id = user_data['id']
         steam_info = get_steam_info(user_Info['steam_id'])
         game_owned = []
-        for item in steam_info['owned_game']:
-            game_owned.addend(add_new_game(item, user_id))    
+        for item in steam_info['game']:
+            game_owned.append(add_new_game(item, user_id))    
         new_user = Users (
             google_id = user_id,
             steam_id = user_Info['steam_id'],
