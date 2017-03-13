@@ -79,11 +79,11 @@ class UserHandler(webapp2.RequestHandler):
         if access_token:
             user_data = decode_token(access_token)
             user_id = user_data['id']
-            query_user = Users.query(Books.google_id == user_id)
+            query_user = Users.query(Users.google_id == user_id)
             user_data = query_user.fetch()
             for item in user_data:
                 single_user = item.to_dict()
-                self.response.write(json.dumps(back_data))	
+                self.response.write(json.dumps(single_user))	
         else:
             user_list = Users.query().fetch()
             user_data = []
