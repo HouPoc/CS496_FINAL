@@ -87,10 +87,10 @@ class UserHandler(webapp2.RequestHandler):
         else:
             user_list = Users.query().fetch()
             user_data = []
-            for item in user_lisat:
+            for item in user_list:
                 single_user = item.to_dict()
                 user_data.append(single_user)
-            self.response.write(json.dumps(back_data))
+            self.response.write(json.dumps(user_data))
 	
     def post(self):
         user_Info = json.loads(self.request.body)
@@ -121,7 +121,6 @@ webapp2.WSGIApplication.allowed_methods = new_allowed_methods
 app = webapp2.WSGIApplication([
     ('/', StartPage),
     ('/User',UserHandler),
-	('/Users', UserHandler)
 ], debug=True)	
 
 
