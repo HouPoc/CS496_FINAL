@@ -53,11 +53,15 @@ def decode_token(access_token):
      return data
 	 
 def add_new_game(game_data, user):
+    if game_data[2] == 0:
+        rp = False
+    else:
+        rp = True
     new_game = Games (
         user_id = user,
         game_id = game_data[0],
         game_name = game_data[1],
-        recent_played = bool(game_data[2]),
+        recent_played = rp,
         play_time = game_data[3]		
     )
     new_game.put()
@@ -85,12 +89,7 @@ class UserHandler(webapp2.RequestHandler):
                 single_user = item.to_dict()
                 self.response.write(json.dumps(single_user))	
         else:
-            user_list = Users.query().fetch()
-            user_data = []
-            for item in user_list:
-                single_user = item.to_dict()
-                user_data.append(single_user)
-            self.response.write(json.dumps(user_data))
+            self.response.write('Permission Deined')
 	
     def post(self):
         user_Info = json.loads(self.request.body)
@@ -111,9 +110,25 @@ class UserHandler(webapp2.RequestHandler):
 
 	
 class GameHandler(webapp2.RequestHandler):
-    def get(self):
-        system.response.write("waiting")
+    def get(self, **args):
+        if 'game_id' in args:
+            queried_game = ndb.Key(Games, int(args['game_id']))      
+            game = queried_game.get()
+            return_data = game.to_dict()
+            self.response.write(json.dumps(return_data))
+        else:
+            access_token = self.request.get('access_token')
+            user_id = decode_token(access_token)['id']             
+            quired_game = Games.query(Games.user_id == user_id)
+            game_data = quired_game.fetch()
+            return_data = []
+            for item in game_data:
+                single_game = item.to_dict()
+                return_data.append(single_game)
+            self.response.write(json.dumps(return_data))  
 
+    def patch(self, **args):
+        self.response.write('wait')          
 	
 allowed_methods = webapp2.WSGIApplication.allowed_methods
 new_allowed_methods = allowed_methods.union(('PATCH',))
@@ -121,8 +136,7 @@ webapp2.WSGIApplication.allowed_methods = new_allowed_methods
 app = webapp2.WSGIApplication([
     ('/', StartPage),
     ('/User',UserHandler),
+    ('/Game',GameHandler)
 ], debug=True)	
-
-
-
+app.router.add(webapp2.Route('/Game/<game_id:\d+>', handler=GameHandler))
 	
