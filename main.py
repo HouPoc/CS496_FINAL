@@ -118,7 +118,7 @@ class UserHandler(webapp2.RequestHandler):
                 new_user.put()
                 self.response.write(json.dumps(new_user.to_dict()))
         except:
-            self.response.write('Invaild access token')
+            self.response.write('Invalid access token')
 		
     def delete(self):
         access_token = self.request.get('access_token')
@@ -138,8 +138,34 @@ class UserHandler(webapp2.RequestHandler):
                 self.response.write('Invalid access token')
         else:
             self.response.write('Permission Deined')
-        		
-			
+
+    def patch(self): 
+        patch_info = json.loads(self.request.body)        		
+        try:
+            user_data = decode_token(patch_info['access_token'])
+            user_id = user_data['id']
+            try:
+                patched_key = Users.query(Users.google_id == user_id).fetch(keys_only ==True)[0]
+                patched_user = patched_key.get()
+                if 'steam_id' in patch_info:
+                    ndb.delete_multi(Games.query(Games.user_id == user_id).fetch(keys_only=True))
+                    patched_user.steam_id = user_data['steam_id']                     
+                    steam_info = get_steam_info(user_data['steam_id'])
+                    game_owned = []
+                    for item in steam_info['game']:
+                        game_owned.append(add_new_game(item, user_id))
+                    patched_user.owned_game = game_owned
+                    patched_user.active_state = steam_info['active']
+                if 'active_state' in patch_info:
+                    patched_user.active_state = user_data['active_state']
+                patched_user.put()
+                response_data = patched_user.to_dict()
+                self.response.write(json.dumps(response_data))
+            except:
+                self.response.write('No user found')
+        except:
+            self.response.write('Invalid acces token')		
+	
 class GameHandler(webapp2.RequestHandler):
     def get(self, **args):
         if 'game_id' in args:
@@ -156,11 +182,9 @@ class GameHandler(webapp2.RequestHandler):
             for item in game_data:
                 single_game = item.to_dict()
                 return_data.append(single_game)
-            self.response.write(json.dumps(return_data))  
+            self.response.write(json.dumps(return_data)) 
 
-    def patch(self, **args):
-        self.response.write('wait')          
-	
+ 
 allowed_methods = webapp2.WSGIApplication.allowed_methods
 new_allowed_methods = allowed_methods.union(('PATCH',))
 webapp2.WSGIApplication.allowed_methods = new_allowed_methods
