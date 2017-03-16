@@ -81,34 +81,63 @@ class UserHandler(webapp2.RequestHandler):
     def get(self):
         access_token = self.request.get('access_token') 
         if access_token:
-            user_data = decode_token(access_token)
-            user_id = user_data['id']
-            query_user = Users.query(Users.google_id == user_id)
-            user_data = query_user.fetch()
-            for item in user_data:
-                single_user = item.to_dict()
-                self.response.write(json.dumps(single_user))	
+            try:
+                user_data = decode_token(access_token)
+                user_id = user_data['id']
+                query_user = Users.query(Users.google_id == user_id)
+                user_data = query_user.fetch()
+                for item in user_data:
+                    single_user = item.to_dict()
+                    self.response.write(json.dumps(single_user))
+            except:
+                self.response.write('Invaid access token')   	
         else:
             self.response.write('Permission Deined')
 	
     def post(self):
         user_Info = json.loads(self.request.body)
-        user_data = decode_token(user_Info['access_token'])
-        user_id = user_data['id']
-        steam_info = get_steam_info(user_Info['steam_id'])
-        game_owned = []
-        for item in steam_info['game']:
-            game_owned.append(add_new_game(item, user_id))    
-        new_user = Users (
-            google_id = user_id,
-            steam_id = user_Info['steam_id'],
-            active_state = steam_info['active'],
-            owned_game = game_owned			
-        )
-        new_user.put()
-        self.response.write(json.dumps(new_user.to_dict()))
+		try:
+            user_data = decode_token(user_Info['access_token'])
+            user_id = user_data['id']
+            steam_info = get_steam_info(user_Info['steam_id'])
+            game_owned = []
+            for item in steam_info['game']:
+                game_owned.append(add_new_game(item, user_id))
+            if len(Users.query(Users.google_id == user_id).fetch()):
+                self.response.write('Already Exist')
+            else:				
+                new_user = Users (
+                    google_id = user_id,
+                    steam_id = user_Info['steam_id'],
+                    active_state = steam_info['active'],
+                    owned_game = game_owned			
+                )
+                new_user.put()
+                self.response.write(json.dumps(new_user.to_dict()))
+        except:
+            self.response.write('Invaid access token')
+		
+	def delete(self):
+        access_token = self.request.get('access_token')
+        if access_token:
+			try:
+                user_data = decode_token(access_token)
+                user_id = user_data['id']
+                query_user = Users.query(Users.google_id == user_id)
+                user_data = query_user.fetch(keys_only=True)
+                if len(user_data) !=0:
+                    ndb.delete_multi(user_data)
+                    ndb.delete_multi(Games.query(Games.user_id == user_id).fetch(keys_only=True))
+                self.response.write('User with id ' + str(user_id) + 'has been deleted')
+            else:
+                self.response.write('No user found')
+			except:
+			    user_id = 0
+        else:
+            self.response.write('Permission Deined')
+        		
 
-	
+			
 class GameHandler(webapp2.RequestHandler):
     def get(self, **args):
         if 'game_id' in args:
@@ -136,6 +165,8 @@ webapp2.WSGIApplication.allowed_methods = new_allowed_methods
 app = webapp2.WSGIApplication([
     ('/', StartPage),
     ('/User',UserHandler),
+	('/addUser', UserHandler),
+	('/deleteUser', UserHandler),
     ('/Game',GameHandler)
 ], debug=True)	
 app.router.add(webapp2.Route('/Game/<game_id:\d+>', handler=GameHandler))
