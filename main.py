@@ -168,6 +168,32 @@ class UserHandler(webapp2.RequestHandler):
                 self.response.write(patch_info['access_token'])
         except:
             self.response.write('Invalid acces token')		
+
+    def put(self):
+        put_info = json.loads(self.request.body)
+        try:
+            replaced_key = ndb.Key(Users, put_info['id'])
+            replaced_user = replaced_key.get()
+            try:
+                user_data = decode_token(put_info['access_token'])
+                user_id = user_data['id'] 
+                if len(Users.quer(Users.google_id == user_id).fetch()):
+                    self.response.write('Already exist')
+                else:
+                   replaced_user.google_id = user_id
+                   replaced_user.steam_id = put_info['steam_id']
+                   steam_info = get_steam_info(put_info['steam_id'])
+                   replaced_user.active_state = steam_info['active']
+                   game_owned = []
+                   for item in steam_info['game']:
+                       game_owned.append(add_new_game(item, user_id))
+                   replaced_user.owned_game = game_owned
+                   replaced_user.put()
+                   self.response.write(json.dumps(replaced_user.to_dict()))
+            except:
+                self.response.write('Invalid access token')
+        except:
+            self.response.write('Incalid ID')
 	
 class GameHandler(webapp2.RequestHandler):
     def get(self, **args):
@@ -194,8 +220,8 @@ webapp2.WSGIApplication.allowed_methods = new_allowed_methods
 app = webapp2.WSGIApplication([
     ('/', StartPage),
     ('/User',UserHandler),
-	('/addUser', UserHandler),
-	('/deleteUser', UserHandler),
+    ('/addUser', UserHandler),
+    ('/deleteUser', UserHandler),
     ('/Game',GameHandler)
 ], debug=True)	
 app.router.add(webapp2.Route('/Game/<game_id:\d+>', handler=GameHandler))

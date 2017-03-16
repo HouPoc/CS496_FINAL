@@ -13,4 +13,7 @@
     4. Patch user info Standard URL: '/User'
        a. Handle invalid access token(checked)
        b. Handle non exist account(checked)   
- 
+    5. Putt user info:
+       a. Hnalde invalid accesstoken
+       b. Handle invalid id
+       c. Hnalde already exist user 
