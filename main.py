@@ -96,7 +96,7 @@ class UserHandler(webapp2.RequestHandler):
 	
     def post(self):
         user_Info = json.loads(self.request.body)
-		try:
+        try:
             user_data = decode_token(user_Info['access_token'])
             user_id = user_data['id']
             steam_info = get_steam_info(user_Info['steam_id'])
@@ -117,10 +117,10 @@ class UserHandler(webapp2.RequestHandler):
         except:
             self.response.write('Invaid access token')
 		
-	def delete(self):
+    def delete(self):
         access_token = self.request.get('access_token')
         if access_token:
-			try:
+            try:
                 user_data = decode_token(access_token)
                 user_id = user_data['id']
                 query_user = Users.query(Users.google_id == user_id)
@@ -129,14 +129,13 @@ class UserHandler(webapp2.RequestHandler):
                     ndb.delete_multi(user_data)
                     ndb.delete_multi(Games.query(Games.user_id == user_id).fetch(keys_only=True))
                 self.response.write('User with id ' + str(user_id) + 'has been deleted')
-            else:
-                self.response.write('No user found')
-			except:
-			    user_id = 0
+                else:
+                    self.response.write('No user found')
+            except:
+                self.response.write('Invaid access token')
         else:
             self.response.write('Permission Deined')
         		
-
 			
 class GameHandler(webapp2.RequestHandler):
     def get(self, **args):
