@@ -90,7 +90,7 @@ class UserHandler(webapp2.RequestHandler):
                     single_user = item.to_dict()
                     self.response.write(json.dumps(single_user))
             except:
-                self.response.write('Invaid access token')   	
+                self.response.write('Invalid access token')   	
         else:
             self.response.write('Permission Deined')
 	
@@ -115,7 +115,7 @@ class UserHandler(webapp2.RequestHandler):
                 new_user.put()
                 self.response.write(json.dumps(new_user.to_dict()))
         except:
-            self.response.write('Invaid access token')
+            self.response.write('Invaild access token')
 		
     def delete(self):
         access_token = self.request.get('access_token')
@@ -132,7 +132,7 @@ class UserHandler(webapp2.RequestHandler):
                 else:
                     self.response.write('No user found')
             except:
-                self.response.write('Invaid access token')
+                self.response.write('Invalid access token')
         else:
             self.response.write('Permission Deined')
         		
