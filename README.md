@@ -10,5 +10,7 @@
        a. Handle invalid access token (checked)
        b. Handle no access token input case (checked)
        c. Handle non exist account  (checked)
-       
+    4. Patch user info Standard URL: '/User'
+       a. Handle invalid access token(checked)
+       b. Handle non exist account(checked)   
  

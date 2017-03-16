@@ -144,25 +144,28 @@ class UserHandler(webapp2.RequestHandler):
         try:
             user_data = decode_token(patch_info['access_token'])
             user_id = user_data['id']
-            try:
-                patched_key = Users.query(Users.google_id == user_id).fetch(keys_only ==True)[0]
+            try:                   
+                quired_item = Users.query(Users.google_id == user_id).fetch()
+                patched_key = None
+                for item in quired_item:
+                    patched_key = item.key
                 patched_user = patched_key.get()
                 if 'steam_id' in patch_info:
                     ndb.delete_multi(Games.query(Games.user_id == user_id).fetch(keys_only=True))
-                    patched_user.steam_id = user_data['steam_id']                     
-                    steam_info = get_steam_info(user_data['steam_id'])
+                    patched_user.steam_id = patch_info['steam_id']                     
+                    steam_info = get_steam_info(patch_info['steam_id'])
                     game_owned = []
                     for item in steam_info['game']:
                         game_owned.append(add_new_game(item, user_id))
                     patched_user.owned_game = game_owned
                     patched_user.active_state = steam_info['active']
                 if 'active_state' in patch_info:
-                    patched_user.active_state = user_data['active_state']
+                    patched_user.active_state = patch_info['active_state']
                 patched_user.put()
                 response_data = patched_user.to_dict()
                 self.response.write(json.dumps(response_data))
             except:
-                self.response.write('No user found')
+                self.response.write(patch_info['access_token'])
         except:
             self.response.write('Invalid acces token')		
 	
