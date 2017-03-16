@@ -86,9 +86,12 @@ class UserHandler(webapp2.RequestHandler):
                 user_id = user_data['id']
                 query_user = Users.query(Users.google_id == user_id)
                 user_data = query_user.fetch()
-                for item in user_data:
-                    single_user = item.to_dict()
-                    self.response.write(json.dumps(single_user))
+                if len(user_data)!=0:
+                    for item in user_data:
+                        single_user = item.to_dict()
+                        self.response.write(json.dumps(single_user))
+                else:
+                    self.response.write('No user found')
             except:
                 self.response.write('Invalid access token')   	
         else:
