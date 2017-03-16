@@ -128,7 +128,7 @@ class UserHandler(webapp2.RequestHandler):
                 if len(user_data) !=0:
                     ndb.delete_multi(user_data)
                     ndb.delete_multi(Games.query(Games.user_id == user_id).fetch(keys_only=True))
-                self.response.write('User with id ' + str(user_id) + 'has been deleted')
+                    self.response.write('User with id ' + str(user_id) + 'has been deleted')
                 else:
                     self.response.write('No user found')
             except:
