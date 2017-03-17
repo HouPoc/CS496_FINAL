@@ -174,10 +174,11 @@ class UserHandler(webapp2.RequestHandler):
         try:
             replaced_key = ndb.Key(Users, put_info['id'])
             replaced_user = replaced_key.get()
+            check = replaced_user.key.id()
             try:
                 user_data = decode_token(put_info['access_token'])
                 user_id = user_data['id'] 
-                if len(Users.quer(Users.google_id == user_id).fetch()):
+                if len(Users.query(Users.google_id == user_id).fetch()):
                     self.response.write('Already exist')
                 else:
                    replaced_user.google_id = user_id
@@ -193,7 +194,7 @@ class UserHandler(webapp2.RequestHandler):
             except:
                 self.response.write('Invalid access token')
         except:
-            self.response.write('Incalid ID')
+            self.response.write('Invalid ID')
 	
 class GameHandler(webapp2.RequestHandler):
     def get(self, **args):

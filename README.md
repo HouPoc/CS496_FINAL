@@ -14,6 +14,6 @@
        a. Handle invalid access token(checked)
        b. Handle non exist account(checked)   
     5. Putt user info:
-       a. Hnalde invalid accesstoken
-       b. Handle invalid id
-       c. Hnalde already exist user 
+       a. Hnalde invalid accesstoken (checked)
+       b. Handle invalid id (checked)
+       c. Hnalde already exist user (checked) 
